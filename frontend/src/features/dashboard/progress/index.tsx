@@ -8,10 +8,21 @@ import { useGetAllProjectsQuery} from '../../workManagement/workManagementApi';
 import { useGetTasks } from '../dashboard/hooks/useGetTasks';
 import { useProjectStatusData, useTaskPriorityData, useTasksByProject, useTaskStatusData } from '../dashboard/hooks/getPriorities';
 import renderProgressParts from '../dashboard/utils/renderProgressParts';
+import { useGetMeQuery } from '../../auth/authApi';
+import { useNavigate } from 'react-router-dom';
 
 export default function Progress () {
-  const { card, text, bg} = useThemeStyles();
+  const { card, text, bg, button } = useThemeStyles();
+  const { data : me, isLoading } = useGetMeQuery();
+  const nav = useNavigate()
 
+  if (isLoading) return <p>loading...</p>
+  else {
+    if(me?.role == 'DEVELOPER') return <div>
+      <p>You don't have permission to open this page</p>
+      <button onClick={() => void nav('/tasks')} className={button.secondary}>RETURN</button>
+    </div>
+  }
   const { data: projectsResponse, isLoading: isProjectsLoading } = useGetAllProjectsQuery({
     page: 0,
     limit: 100,

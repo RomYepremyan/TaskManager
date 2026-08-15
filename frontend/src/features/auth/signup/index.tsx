@@ -3,19 +3,29 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { User } from "../../../types/types";
 import { useThemeStyles } from "../../../hooks/useThemeStyles";
 import { Link, useNavigate } from "react-router-dom";
-import { useGetUsersByRoleQuery, useSignUpMutation } from "../authApi";
+import { useGetMeQuery, useGetUsersByRoleQuery, useSignUpMutation } from "../authApi";
 
 export const Signup: React.FC = () => {
     const { register, formState: { errors }, handleSubmit } = useForm<User>()
     const [signUp] = useSignUpMutation();
     const { card, text, input, button, isDark } = useThemeStyles()
     const { data: gods } = useGetUsersByRoleQuery({ role: "GOD" });
+    const { data: me, isLoading } = useGetMeQuery();
+    const nav = useNavigate()
+
+    if (isLoading) return <p>loading...</p>
+    else {
+        if (me?.role == 'DEVELOPER') return <div>
+            <p>You don't have permission to open this page</p>
+            <button onClick={() => void nav('/tasks')} className={button.secondary}>RETURN</button>
+        </div>
+    }
     const navigate = useNavigate()
     const handleSend: SubmitHandler<User> = (data) => {
         console.log(data)
         void signUp(data)
             .unwrap()
-            .then(() => setTimeout(() => navigate('/'),15))
+            .then(() => setTimeout(() => navigate('/'), 15))
             .catch(console.log)
     }
 
@@ -47,7 +57,7 @@ export const Signup: React.FC = () => {
                     </div>
                     <div>
                         <label className={`text-sm font-medium block mb-1 ${text.secondary}`}>Phone Number</label>
-                        <input type="text" placeholder="98 123 456" {...register("phone", { required: "please fill your phone number",setValueAs : Number })} className={input} />
+                        <input type="text" placeholder="98 123 456" {...register("phone", { required: "please fill your phone number", setValueAs: Number })} className={input} />
                     </div>
                     {gods.length >= 1 && (<>
                         <div>
